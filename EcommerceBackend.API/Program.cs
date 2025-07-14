@@ -31,6 +31,8 @@ using EcommerceBackend.DataAccess.Repository;
 using EcommerceBackend.BusinessObject.Abstract.AuthAbstract;
 
 
+
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -61,6 +63,8 @@ builder.Services.AddScoped<EcommerceBackend.BusinessObject.Services.SaleService.
 builder.Services.AddScoped<EcommerceBackend.DataAccess.Repository.SaleRepository.ICategoryRepository, EcommerceBackend.DataAccess.Repository.SaleRepository.CategoryRepository>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IOtpService, OtpService>();
+builder.Services.AddScoped<ICartRepository, CartRepository>();
+builder.Services.AddScoped<CartService>();
 builder.Services.AddMemoryCache();
 
 // Config Authentication Jwt
@@ -121,7 +125,7 @@ app.UseRouting();
 app.UseCors("AllowFrontendApp");
 app.UseAuthentication();
 app.UseAuthorization();
-
+app.UseStaticFiles();
 app.MapControllers();
 
 app.Run();

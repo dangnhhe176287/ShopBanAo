@@ -1,6 +1,8 @@
-using EcommerceBackend.BusinessObject.Services.OrderService;
 using Microsoft.AspNetCore.Mvc;
-using System.Threading.Tasks;
+using EcommerceBackend.API.Dtos;
+using EcommerceBackend.DataAccess.Models;
+using System;
+using System.Linq;
 
 namespace EcommerceBackend.API.Controllers
 {
@@ -8,22 +10,100 @@ namespace EcommerceBackend.API.Controllers
     [Route("api/[controller]")]
     public class OrdersController : ControllerBase
     {
-        private readonly IOrderService _orderService;
-        public OrdersController(IOrderService orderService)
+        private readonly EcommerceDBContext _context;
+        public OrdersController(EcommerceDBContext context)
         {
-            _orderService = orderService;
+            _context = context;
         }
-        [HttpGet]
-        //public async Task<IActionResult> GetAllOrders()
-        //{
-        //    var orders = await _orderService.GetAllOrdersAsync();
-        //    return Ok(orders);
-        //}
-        [HttpGet("details")]
-        public async Task<IActionResult> GetAllOrderDetails()
+
+        [HttpPost]
+        public IActionResult CreateOrder([FromBody] OrderRequestDto orderDto)
         {
-            var details = await _orderService.GetAllOrderDetailsAsync();
-            return Ok(details);
+            if (orderDto == null || orderDto.Items == null || !orderDto.Items.Any())
+                return BadRequest("Dữ liệu đơn hàng không hợp lệ");
+
+            var order = new Order
+            {
+                CustomerId = orderDto.CustomerId,
+                CustomerName = orderDto.CustomerName,
+                Phone = orderDto.Phone,
+                Address = orderDto.Address,
+                AmountDue = orderDto.TotalAmount,
+                CreatedAt = DateTime.UtcNow
+            };
+            _context.Orders.Add(order);
+            _context.SaveChanges();
+
+            foreach (var item in orderDto.Items)
+            {
+                var detail = new OrderDetail
+                {
+                    OrderId = order.OrderId,
+                    ProductId = item.ProductId,
+                    ProductName = item.ProductName,
+                    Price = item.Price,
+                    Quantity = item.Quantity
+                };
+                _context.OrderDetails.Add(detail);
+            }
+            _context.SaveChanges();
+
+            return Ok(new OrderResponseDto
+            {
+                OrderId = order.OrderId,
+                Status = "Success",
+                Message = "Đặt hàng thành công!"
+            });
+        }
+
+        [HttpGet]
+        public IActionResult GetOrders([FromQuery] int customerId)
+        {
+            var orders = _context.Orders
+                .Where(o => o.CustomerId == customerId)
+                .OrderByDescending(o => o.CreatedAt)
+                .Select(o => new OrderViewDto
+                {
+                    OrderId = o.OrderId,
+                    CustomerName = o.CustomerName,
+                    Phone = o.Phone,
+                    Address = o.Address,
+                    AmountDue = o.AmountDue ?? 0,
+                    CreatedAt = o.CreatedAt,
+                    Items = o.OrderDetails.Select(d => new OrderDetailViewDto
+                    {
+                        ProductId = d.ProductId ?? 0,
+                        ProductName = d.ProductName,
+                        Price = d.Price ?? 0,
+                        Quantity = d.Quantity ?? 0
+                    }).ToList()
+                }).ToList();
+            return Ok(orders);
+        }
+
+        [HttpGet("{orderId}")]
+        public IActionResult GetOrderDetail(int orderId)
+        {
+            var order = _context.Orders
+                .Where(o => o.OrderId == orderId)
+                .Select(o => new OrderViewDto
+                {
+                    OrderId = o.OrderId,
+                    CustomerName = o.CustomerName,
+                    Phone = o.Phone,
+                    Address = o.Address,
+                    AmountDue = o.AmountDue ?? 0,
+                    CreatedAt = o.CreatedAt,
+                    Items = o.OrderDetails.Select(d => new OrderDetailViewDto
+                    {
+                        ProductId = d.ProductId ?? 0,
+                        ProductName = d.ProductName,
+                        Price = d.Price ?? 0,
+                        Quantity = d.Quantity ?? 0
+                    }).ToList()
+                }).FirstOrDefault();
+            if (order == null) return NotFound();
+            return Ok(order);
         }
     }
 } 

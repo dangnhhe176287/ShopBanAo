@@ -158,13 +158,22 @@ namespace EcommerceBackend.DataAccess.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("OrderId"), 1L, 1);
 
+                    b.Property<string>("Address")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<decimal?>("AmountDue")
                         .HasColumnType("decimal(18,2)")
                         .HasColumnName("Amount_due");
 
+                    b.Property<DateTime?>("CreatedAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<int?>("CustomerId")
                         .HasColumnType("int")
                         .HasColumnName("Customer_id");
+
+                    b.Property<string>("CustomerName")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("OrderNote")
                         .HasMaxLength(500)
@@ -178,6 +187,9 @@ namespace EcommerceBackend.DataAccess.Migrations
                     b.Property<int?>("PaymentMethodId")
                         .HasColumnType("int")
                         .HasColumnName("Payment_method_id");
+
+                    b.Property<string>("Phone")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int?>("TotalQuantity")
                         .HasColumnType("int")

@@ -417,6 +417,18 @@ namespace EcommerceBackend.BusinessObject.Services
                 Variants = ParseVariantValues(v.Variants)
             }).ToList() ?? new List<ProductVariantDTO>();
 
+            // Lấy ảnh đầu tiên, build baseUrl nếu cần
+            string? imageUrl = null;
+            var firstImage = product.ProductImages?.FirstOrDefault();
+            if (firstImage != null && !string.IsNullOrEmpty(firstImage.ImageUrl))
+            {
+                imageUrl = firstImage.ImageUrl;
+                if (!imageUrl.StartsWith("http"))
+                {
+                    imageUrl = "http://10.0.2.2:5287" + imageUrl;
+                }
+            }
+
             return new ProductDTO
             {
                 ProductId = product.ProductId,
@@ -427,7 +439,7 @@ namespace EcommerceBackend.BusinessObject.Services
                 AvailableAttributes = product.AvailableAttributes,
                 CategoryId = (int)product.ProductCategoryId,
                 CategoryName = product.ProductCategory?.ProductCategoryTitle,
-                Images = product.ProductImages?.Select(i => i.ImageUrl).ToList() ?? new List<string>(),
+                ImageUrl = imageUrl,
                 Variants = variants,
                 CreatedAt = product.CreatedAt,
                 UpdatedAt = product.UpdatedAt

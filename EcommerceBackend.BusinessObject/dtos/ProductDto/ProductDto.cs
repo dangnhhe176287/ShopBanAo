@@ -16,7 +16,7 @@ namespace EcommerceBackend.BusinessObject.DTOs
         public string AvailableAttributes { get; set; } = "{}";
         public int CategoryId { get; set; }
         public string? CategoryName { get; set; }
-        public List<string> Images { get; set; } = new List<string>();
+        public string? ImageUrl { get; set; }
         public List<ProductVariantDTO> Variants { get; set; } = new List<ProductVariantDTO>();
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
