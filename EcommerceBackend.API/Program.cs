@@ -9,7 +9,7 @@ using PdfSharp.Fonts;
 using EcommerceBackend.API.Configurations;
 using EcommerceBackend.API.Hubs;
 using EcommerceBackend.BusinessObject.Services;
-
+using EcommerceBackend.BusinessObject.Services.SaleService.ProductService;
 
 using EcommerceBackend.DataAccess.Repository.SaleRepository;
 
@@ -27,10 +27,14 @@ using EcommerceBackend.DataAccess.Models;
 
 using EcommerceBackend.BusinessObject.Services.SaleService;
 using EcommerceBackend.DataAccess.Abstract;
-using EcommerceBackend.DataAccess.Repository;
+using EcommerceBackend.BusinessObject.Services.SaleService.CategoryService;
 using EcommerceBackend.BusinessObject.Abstract.AuthAbstract;
-
-
+using EcommerceBackend.DataAccess.Repository.SaleRepository.ProductRepo;
+using EcommerceBackend.DataAccess.Repository.SaleRepository.CategoryRepo;
+using EcommerceBackend.BusinessObject.Services.SaleService.OrderService;
+using EcommerceBackend.BusinessObject.Services.SaleService.UserService;
+using EcommerceBackend.DataAccess.Repository.SaleRepository.OrderRepo;
+using EcommerceBackend.DataAccess.Repository.SaleRepository.UserRepo;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -56,11 +60,14 @@ builder.Services.AddScoped<IProductService, ProductService>();
 
 
 
-//builder.Services.AddScoped<ISaleProductService, SaleProductService>();
-builder.Services.AddScoped<ISaleService, SaleService>(); 
-builder.Services.AddScoped<EcommerceBackend.DataAccess.Repository.SaleRepository.IProductRepository, EcommerceBackend.DataAccess.Repository.SaleRepository.ProductRepository>();
-builder.Services.AddScoped<EcommerceBackend.BusinessObject.Services.SaleService.ICategoryService, EcommerceBackend.BusinessObject.Services.SaleService.CategoryService>();
-builder.Services.AddScoped<EcommerceBackend.DataAccess.Repository.SaleRepository.ICategoryRepository, EcommerceBackend.DataAccess.Repository.SaleRepository.CategoryRepository>();
+builder.Services.AddScoped<ISaleService, SaleService>();
+builder.Services.AddScoped<EcommerceBackend.DataAccess.Repository.SaleRepository.ProductRepo.IProductRepository, EcommerceBackend.DataAccess.Repository.SaleRepository.ProductRepo.ProductRepository>();
+builder.Services.AddScoped<ICategoryService, CategoryService>();
+builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
+builder.Services.AddScoped<ISaleOrderService, SaleOrderService>();
+builder.Services.AddScoped<ISaleOrderRepository, SaleOrderRepository>();
+builder.Services.AddScoped<ISaleUserService, SaleUserService>();
+builder.Services.AddScoped<ISaleUserRepository, SaleUserRepository>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IOtpService, OtpService>();
 builder.Services.AddScoped<ICartRepository, CartRepository>();
