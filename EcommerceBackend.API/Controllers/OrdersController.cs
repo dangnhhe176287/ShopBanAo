@@ -25,11 +25,7 @@ namespace EcommerceBackend.API.Controllers
             var order = new Order
             {
                 CustomerId = orderDto.CustomerId,
-                CustomerName = orderDto.CustomerName,
-                Phone = orderDto.Phone,
-                Address = orderDto.Address,
-                AmountDue = orderDto.TotalAmount,
-                CreatedAt = DateTime.UtcNow
+                AmountDue = orderDto.TotalAmount
             };
             _context.Orders.Add(order);
             _context.SaveChanges();
@@ -65,11 +61,7 @@ namespace EcommerceBackend.API.Controllers
                 .Select(o => new OrderViewDto
                 {
                     OrderId = o.OrderId,
-                    CustomerName = o.CustomerName,
-                    Phone = o.Phone,
-                    Address = o.Address,
                     AmountDue = o.AmountDue ?? 0,
-                    CreatedAt = o.CreatedAt,
                     Items = o.OrderDetails.Select(d => new OrderDetailViewDto
                     {
                         ProductId = d.ProductId ?? 0,
@@ -89,11 +81,7 @@ namespace EcommerceBackend.API.Controllers
                 .Select(o => new OrderViewDto
                 {
                     OrderId = o.OrderId,
-                    CustomerName = o.CustomerName,
-                    Phone = o.Phone,
-                    Address = o.Address,
                     AmountDue = o.AmountDue ?? 0,
-                    CreatedAt = o.CreatedAt,
                     Items = o.OrderDetails.Select(d => new OrderDetailViewDto
                     {
                         ProductId = d.ProductId ?? 0,
