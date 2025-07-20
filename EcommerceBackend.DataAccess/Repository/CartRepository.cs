@@ -70,7 +70,7 @@ namespace EcommerceBackend.DataAccess.Repository
             await _context.SaveChangesAsync();
         }
 
-        public async Task AddToCartAsync(int userId, int productId, int quantity)
+        public async Task AddToCartAsync(int userId, int productId, int variantId, int quantity)
         {
             var cart = await _context.Carts.Include(c => c.CartDetails)
                 .FirstOrDefaultAsync(c => c.CustomerId == userId);
@@ -80,12 +80,13 @@ namespace EcommerceBackend.DataAccess.Repository
                 await _context.Carts.AddAsync(cart);
                 await _context.SaveChangesAsync();
             }
-            var cartDetail = cart.CartDetails.FirstOrDefault(cd => cd.ProductId == productId);
+            var cartDetail = cart.CartDetails.FirstOrDefault(cd => cd.ProductId == productId && cd.VariantId == variantId.ToString());
             if (cartDetail == null)
             {
                 var product = await _context.Products.FirstOrDefaultAsync(p => p.ProductId == productId);
                 cartDetail = new CartDetail {
                     ProductId = productId,
+                    VariantId = variantId.ToString(),
                     Quantity = quantity,
                     CartId = cart.CartId,
                     ProductName = product?.Name,
@@ -95,19 +96,20 @@ namespace EcommerceBackend.DataAccess.Repository
             }
             else
             {
-                cartDetail.Quantity += quantity;
+                // Nếu đã có, chỉ tăng thêm 1
+                cartDetail.Quantity = (cartDetail.Quantity ?? 0) + 1;
                 _context.CartDetails.Update(cartDetail);
             }
             cart.TotalQuantity = cart.CartDetails.Where(cd => cd.Quantity > 0).Sum(cd => cd.Quantity ?? 0);
             await _context.SaveChangesAsync();
         }
 
-        public async Task UpdateCartItemAsync(int userId, int productId, int quantity)
+        public async Task UpdateCartItemAsync(int userId, int productId, int variantId, int quantity)
         {
             var cart = await _context.Carts.Include(c => c.CartDetails)
                 .FirstOrDefaultAsync(c => c.CustomerId == userId);
             if (cart == null) return;
-            var cartDetail = cart.CartDetails.FirstOrDefault(cd => cd.ProductId == productId);
+            var cartDetail = cart.CartDetails.FirstOrDefault(cd => cd.ProductId == productId && cd.VariantId == variantId.ToString());
             if (cartDetail != null)
             {
                 if (quantity > 0)

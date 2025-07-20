@@ -12,13 +12,13 @@ namespace EcommerceBackend.BusinessObject.Services
             _cartRepository = cartRepository;
         }
 
-        public async Task AddToCart(int userId, int productId, int quantity)
+        public async Task AddToCart(int userId, int productId, int variantId, int quantity)
         {
-            await _cartRepository.AddToCartAsync(userId, productId, quantity);
+            await _cartRepository.AddToCartAsync(userId, productId, variantId, quantity);
         }
-        public async Task UpdateCartItem(int userId, int productId, int quantity)
+        public async Task UpdateCartItem(int userId, int productId, int variantId, int quantity)
         {
-            await _cartRepository.UpdateCartItemAsync(userId, productId, quantity);
+            await _cartRepository.UpdateCartItemAsync(userId, productId, variantId, quantity);
         }
 
         public async Task<Cart> GetCartByUserId(int userId)

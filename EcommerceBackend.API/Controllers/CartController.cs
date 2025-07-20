@@ -23,7 +23,7 @@ namespace EcommerceBackend.API.Controllers
         [HttpPost("{userId}/add")]
         public async Task<IActionResult> AddToCart(int userId, [FromBody] CartItemDto item)
         {
-            await _cartService.AddToCart(userId, item.ProductId, item.Quantity);
+            await _cartService.AddToCart(userId, item.ProductId, item.VariantId, item.Quantity);
             return Ok();
         }
 
@@ -71,14 +71,14 @@ namespace EcommerceBackend.API.Controllers
         [HttpPut("{userId}/update")]
         public async Task<IActionResult> UpdateCartItem(int userId, [FromBody] CartItemDto item)
         {
-            await _cartService.UpdateCartItem(userId, item.ProductId, item.Quantity);
+            await _cartService.UpdateCartItem(userId, item.ProductId, item.VariantId, item.Quantity);
             return Ok();
         }
 
-        [HttpDelete("{userId}/remove/{productId}")]
-        public async Task<IActionResult> RemoveFromCart(int userId, int productId)
+        [HttpDelete("{userId}/remove/{productId}/{variantId}")]
+        public async Task<IActionResult> RemoveFromCart(int userId, int productId, int variantId)
         {
-            await _cartService.AddToCart(userId, productId, 0); // Đặt quantity = 0 để xóa
+            await _cartService.AddToCart(userId, productId, variantId, 0); // Đặt quantity = 0 để xóa
             return Ok();
         }
     }
