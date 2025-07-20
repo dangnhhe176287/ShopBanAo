@@ -31,8 +31,8 @@ namespace EcommerceBackend.BusinessObject.Services
         Task<Dictionary<string, List<string>>> GetProductAttributesAsync(int productId);
 
         // New methods for managing variant values
-        Task<bool> AddVariantValueAsync(int variantId, Dictionary<string, string> variantValue);
-        Task<bool> UpdateVariantValueAsync(int variantId, int valueIndex, Dictionary<string, string> variantValue);
+        Task<bool> AddVariantValueAsync(int variantId, Dictionary<string, object> variantValue);
+        Task<bool> UpdateVariantValueAsync(int variantId, int valueIndex, Dictionary<string, object> variantValue);
         Task<bool> DeleteVariantValueAsync(int variantId, int valueIndex);
         Task<List<Dictionary<string, object>>> GetVariantValuesAsync(int variantId);
 

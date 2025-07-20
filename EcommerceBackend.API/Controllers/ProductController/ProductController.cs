@@ -214,7 +214,7 @@ namespace EcommerceBackend.API.Controllers
         [HttpPost("variants/{variantId}/values")]
         public async Task<ActionResult<bool>> AddVariantValue(
             int variantId,
-            [FromBody] Dictionary<string, string> variantValue)
+            [FromBody] Dictionary<string, object> variantValue)
         {
             try
             {
@@ -232,7 +232,7 @@ namespace EcommerceBackend.API.Controllers
         public async Task<ActionResult<bool>> UpdateVariantValue(
             int variantId,
             int valueIndex,
-            [FromBody] Dictionary<string, string> variantValue)
+            [FromBody] Dictionary<string, object> variantValue)
         {
             try
             {
@@ -265,7 +265,7 @@ namespace EcommerceBackend.API.Controllers
         }
 
         [HttpGet("variants/{variantId}/values")]
-        public async Task<ActionResult<List<Dictionary<string, string>>>> GetVariantValues(int variantId)
+        public async Task<ActionResult<List<Dictionary<string, object>>>> GetVariantValues(int variantId)
         {
             try
             {

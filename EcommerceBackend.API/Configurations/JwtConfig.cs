@@ -29,6 +29,8 @@ namespace EcommerceBackend.API.Configurations
                     {
                         OnAuthenticationFailed = context =>
                         {
+                            // Nếu endpoint có [AllowAnonymous], không trả về 401
+                            context.NoResult();
                             return Task.CompletedTask;
                         },
                     };

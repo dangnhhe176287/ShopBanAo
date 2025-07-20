@@ -24,6 +24,8 @@ namespace EcommerceBackend.DataAccess.Models
         [Column("variants")]
         public string Variants { get; set; } = "[]";
 
+        // Đã xóa các thuộc tính Price và StockQuantity vì lưu trong JSON
+
         [Column("created_at")]
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 

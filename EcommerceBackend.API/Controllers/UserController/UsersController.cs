@@ -2,9 +2,11 @@
 using EcommerceBackend.BusinessObject.Services.UserService;
 using EcommerceBackend.DataAccess.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 
 namespace EcommerceBackend.API.Controllers.UserController
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class UsersController : ControllerBase
@@ -20,11 +22,25 @@ namespace EcommerceBackend.API.Controllers.UserController
         public IActionResult Get() => Ok(_service.GetAll());
 
         [HttpGet("{id}")]
+        [AllowAnonymous] // Nếu muốn public, nếu muốn bảo mật thì bỏ dòng này
         public IActionResult Get(int id)
         {
             var user = _service.GetById(id);
             if (user == null) return NotFound();
-            return Ok(user);
+            // Không trả về password
+            var userProfile = new
+            {
+                user.UserId,
+                user.UserName,
+                user.Email,
+                user.Phone,
+                user.DateOfBirth,
+                user.Address,
+                user.CreateDate,
+                user.Status,
+                user.RoleId
+            };
+            return Ok(userProfile);
         }
 
         [HttpPost]

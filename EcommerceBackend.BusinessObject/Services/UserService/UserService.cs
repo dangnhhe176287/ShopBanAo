@@ -20,6 +20,7 @@ namespace EcommerceBackend.BusinessObject.Services.UserService
 
         public IEnumerable<User> GetAll() => _repo.GetAll();
         public User? GetById(int id) => _repo.GetById(id);
+        public User? GetByEmail(string email) => _repo.GetByEmail(email);
         public void Add(UserDto userDto)
         {
             var user = new User

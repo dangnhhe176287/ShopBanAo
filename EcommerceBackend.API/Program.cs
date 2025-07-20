@@ -65,6 +65,10 @@ builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IOtpService, OtpService>();
 builder.Services.AddScoped<ICartRepository, CartRepository>();
 builder.Services.AddScoped<CartService>();
+builder.Services.AddScoped<EcommerceBackend.DataAccess.Repository.IReviewRepository, EcommerceBackend.DataAccess.Repository.ReviewRepository>();
+builder.Services.AddScoped<EcommerceBackend.BusinessObject.Services.IReviewService, EcommerceBackend.BusinessObject.Services.ReviewService>();
+builder.Services.AddScoped<EcommerceBackend.DataAccess.Repository.IRatingRepository, EcommerceBackend.DataAccess.Repository.RatingRepository>();
+builder.Services.AddScoped<EcommerceBackend.BusinessObject.Services.IRatingService, EcommerceBackend.BusinessObject.Services.RatingService>();
 builder.Services.AddMemoryCache();
 
 // Config Authentication Jwt

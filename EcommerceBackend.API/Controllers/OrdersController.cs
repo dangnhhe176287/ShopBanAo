@@ -57,7 +57,7 @@ namespace EcommerceBackend.API.Controllers
         {
             var orders = _context.Orders
                 .Where(o => o.CustomerId == customerId)
-                .OrderByDescending(o => o.CreatedAt)
+                
                 .Select(o => new OrderViewDto
                 {
                     OrderId = o.OrderId,

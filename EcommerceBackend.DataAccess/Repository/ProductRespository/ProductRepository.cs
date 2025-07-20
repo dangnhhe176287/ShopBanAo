@@ -138,22 +138,60 @@ namespace EcommerceBackend.DataAccess.Repository
             }
         }
 
+        // Helper method để deserialize variant values một cách an toàn
+        private List<Dictionary<string, object>> DeserializeVariantValues(string? jsonString)
+        {
+            if (string.IsNullOrWhiteSpace(jsonString) || !IsValidJson(jsonString))
+                return new List<Dictionary<string, object>>();
+
+            try
+            {
+                return JsonSerializer.Deserialize<List<Dictionary<string, object>>>(jsonString, _jsonOptions) 
+                    ?? new List<Dictionary<string, object>>();
+            }
+            catch (JsonException ex)
+            {
+                _logger.LogError(ex, "Failed to deserialize variant values: {JsonString}", jsonString);
+                return new List<Dictionary<string, object>>();
+            }
+        }
+
+        // Helper method để serialize variant values
+        private string SerializeVariantValues(List<Dictionary<string, object>> variantValues)
+        {
+            try
+            {
+                return JsonSerializer.Serialize(variantValues, _jsonOptions);
+            }
+            catch (JsonException ex)
+            {
+                _logger.LogError(ex, "Failed to serialize variant values");
+                return "[]";
+            }
+        }
 
         public async Task<bool> UpdateProductAttributesAsync(int productId, string availableAttributes)
         {
             try
             {
                 var product = await _context.Products.FindAsync(productId);
-                if (product == null) return false;
+                if (product == null) 
+                {
+                    _logger.LogWarning("Product not found: ProductId={ProductId}", productId);
+                    return false;
+                }
 
                 product.AvailableAttributes = availableAttributes;
                 product.UpdatedAt = DateTime.UtcNow;
 
                 await _context.SaveChangesAsync();
+                
+                _logger.LogInformation("Successfully updated product attributes: ProductId={ProductId}", productId);
                 return true;
             }
-            catch
+            catch (Exception ex)
             {
+                _logger.LogError(ex, "Error updating product attributes: ProductId={ProductId}", productId);
                 return false;
             }
         }
@@ -178,20 +216,25 @@ namespace EcommerceBackend.DataAccess.Repository
                     .Include(p => p.Variants)
                     .FirstOrDefaultAsync(p => p.ProductId == variant.ProductId && !p.IsDelete);
 
-                if (product == null) return false;
+                if (product == null) 
+                {
+                    _logger.LogWarning("Product not found for variant: ProductId={ProductId}", variant.ProductId);
+                    return false;
+                }
 
                 // Get current variants
                 var variants = product.Variants?.ToList() ?? new List<ProductVariant>();
 
                 // Deserialize biến thể mới
-                var newVariantDict = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, object>>(variant.Attributes ?? "{}", _jsonOptions) ?? new();
+                var newVariantDict = DeserializeVariantValues(variant.Attributes);
 
                 // Check duplicate: so sánh toàn bộ key-value
                 bool isDuplicate = variants.Any(existing =>
                 {
-                    var existingDict = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, object>>(existing.Attributes ?? "{}", _jsonOptions) ?? new();
-                    return IsDuplicateVariant(existingDict, newVariantDict);
+                    var existingDict = DeserializeVariantValues(existing.Attributes);
+                    return existingDict.Any(existingVariant => IsDuplicateVariant(existingVariant, newVariantDict.FirstOrDefault() ?? new()));
                 });
+                
                 if (isDuplicate)
                 {
                     _logger.LogWarning("Duplicate variant detected: {Attributes}", variant.Attributes);
@@ -200,15 +243,17 @@ namespace EcommerceBackend.DataAccess.Repository
 
                 // Thêm biến thể mới
                 variants.Add(variant);
-                product.Variants = variants; // Gán lại list ProductVariant
+                product.Variants = variants;
                 product.UpdatedAt = DateTime.UtcNow;
                 await _context.SaveChangesAsync();
 
+                _logger.LogInformation("Successfully added variant for product: ProductId={ProductId}, VariantId={VariantId}", 
+                    variant.ProductId, variant.VariantId);
                 return true;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error adding product variant");
+                _logger.LogError(ex, "Error adding product variant: ProductId={ProductId}", variant.ProductId);
                 return false;
             }
         }
@@ -221,35 +266,40 @@ namespace EcommerceBackend.DataAccess.Repository
                     .Include(v => v.Product)
                     .FirstOrDefaultAsync(v => v.VariantId == variant.VariantId);
 
-                if (existingVariant == null) return false;
-
-                // Merge list mới vào list cũ (append, không ghi đè)
-                var oldList = System.Text.Json.JsonSerializer.Deserialize<List<Dictionary<string, object>>>(
-                    existingVariant.Variants ?? "[]", _jsonOptions) ?? new List<Dictionary<string, object>>();
-                var newList = System.Text.Json.JsonSerializer.Deserialize<List<Dictionary<string, object>>>(
-                    variant.Variants ?? "[]", _jsonOptions) ?? new List<Dictionary<string, object>>();
-
-                // Chỉ append các giá trị mới chưa có trong list cũ
-                foreach (var newItem in newList)
+                if (existingVariant == null) 
                 {
-                    bool exists = oldList.Any(oldItem =>
-                        oldItem.Keys.All(k => newItem.ContainsKey(k) && oldItem[k]?.ToString() == newItem[k]?.ToString()) &&
-                        newItem.Keys.All(k => oldItem.ContainsKey(k) && oldItem[k]?.ToString() == newItem[k]?.ToString())
-                    );
-                    if (!exists)
-                        oldList.Add(newItem);
+                    _logger.LogWarning("Variant not found: VariantId={VariantId}", variant.VariantId);
+                    return false;
                 }
 
-                existingVariant.Variants = System.Text.Json.JsonSerializer.Serialize(oldList, _jsonOptions);
+                // Cập nhật thông tin cơ bản của variant
                 existingVariant.Attributes = variant.Attributes;
+                // Parse price và stock từ variant.Variants (JSON)
+                var variantList = DeserializeVariantValues(variant.Variants);
+                if (variantList != null && variantList.Count > 0)
+                {
+                    var firstVariant = variantList[0];
+                    var price = firstVariant.ContainsKey("price") ? Convert.ToDecimal(firstVariant["price"]) : 0;
+                    var stock = firstVariant.ContainsKey("stock") ? Convert.ToInt32(firstVariant["stock"]) : 0;
+                    // Nếu cần sử dụng price/stock, dùng biến này
+                }
+                // Không còn truy cập existingVariant.Price hay existingVariant.StockQuantity
+                existingVariant.Variants = variant.Variants;
                 existingVariant.UpdatedAt = DateTime.UtcNow;
-                existingVariant.Product.UpdatedAt = DateTime.UtcNow;
+                
+                if (existingVariant.Product != null)
+                {
+                    existingVariant.Product.UpdatedAt = DateTime.UtcNow;
+                }
 
                 await _context.SaveChangesAsync();
+                
+                _logger.LogInformation("Successfully updated variant: VariantId={VariantId}", variant.VariantId);
                 return true;
             }
-            catch
+            catch (Exception ex)
             {
+                _logger.LogError(ex, "Error updating product variant: VariantId={VariantId}", variant.VariantId);
                 return false;
             }
         }
@@ -259,14 +309,21 @@ namespace EcommerceBackend.DataAccess.Repository
             try
             {
                 var variant = await _context.ProductVariants.FindAsync(variantId);
-                if (variant == null) return false;
+                if (variant == null) 
+                {
+                    _logger.LogWarning("Variant not found for deletion: VariantId={VariantId}", variantId);
+                    return false;
+                }
 
                 _context.ProductVariants.Remove(variant);
                 await _context.SaveChangesAsync();
+                
+                _logger.LogInformation("Successfully deleted variant: VariantId={VariantId}", variantId);
                 return true;
             }
-            catch
+            catch (Exception ex)
             {
+                _logger.LogError(ex, "Error deleting product variant: VariantId={VariantId}", variantId);
                 return false;
             }
         }
@@ -376,7 +433,7 @@ namespace EcommerceBackend.DataAccess.Repository
             }
         }
 
-        public async Task<bool> AddVariantValueAsync(int variantId, Dictionary<string, string> variantValue)
+        public async Task<bool> AddVariantValueAsync(int variantId, Dictionary<string, object> variantValue)
         {
             try
             {
@@ -384,27 +441,40 @@ namespace EcommerceBackend.DataAccess.Repository
                     .Include(v => v.Product)
                     .FirstOrDefaultAsync(v => v.VariantId == variantId);
 
-                if (variant == null) return false;
+                if (variant == null) 
+                {
+                    _logger.LogWarning("Variant not found: VariantId={VariantId}", variantId);
+                    return false;
+                }
 
-                // Get current variant values từ property string (Variants)
-                var variants = System.Text.Json.JsonSerializer.Deserialize<List<Dictionary<string, string>>>(
-                    variant.Variants ?? "[]", _jsonOptions) ?? new List<Dictionary<string, string>>();
+                // Get current variant values
+                var variants = DeserializeVariantValues(variant.Variants);
+
+                // Check for duplicate
+                if (variants.Any(v => IsDuplicateVariant(v, variantValue)))
+                {
+                    _logger.LogWarning("Duplicate variant value detected: VariantId={VariantId}", variantId);
+                    return false;
+                }
 
                 // Add new variant value
                 variants.Add(variantValue);
-                variant.Variants = System.Text.Json.JsonSerializer.Serialize(variants, _jsonOptions);
+                variant.Variants = SerializeVariantValues(variants);
                 variant.UpdatedAt = DateTime.UtcNow;
 
                 await _context.SaveChangesAsync();
+                
+                _logger.LogInformation("Successfully added variant value: VariantId={VariantId}", variantId);
                 return true;
             }
-            catch
+            catch (Exception ex)
             {
+                _logger.LogError(ex, "Error adding variant value: VariantId={VariantId}", variantId);
                 return false;
             }
         }
 
-        public async Task<bool> UpdateVariantValueAsync(int variantId, int valueIndex, Dictionary<string, string> variantValue)
+        public async Task<bool> UpdateVariantValueAsync(int variantId, int valueIndex, Dictionary<string, object> variantValue)
         {
             try
             {
@@ -412,27 +482,34 @@ namespace EcommerceBackend.DataAccess.Repository
                     .Include(v => v.Product)
                     .FirstOrDefaultAsync(v => v.VariantId == variantId);
 
-                if (variant == null) return false;
+                if (variant == null) 
+                {
+                    _logger.LogWarning("Variant not found: VariantId={VariantId}", variantId);
+                    return false;
+                }
 
-                // Get current variant values từ property string (Variants)
-                var variants = System.Text.Json.JsonSerializer.Deserialize<List<Dictionary<string, string>>>(
-                    variant.Variants ?? "[]", _jsonOptions) ?? new List<Dictionary<string, string>>();
+                // Get current variant values
+                var variants = DeserializeVariantValues(variant.Variants);
 
                 if (valueIndex < 0 || valueIndex >= variants.Count)
                 {
-                    return false; // Invalid index
+                    _logger.LogWarning("Invalid value index: VariantId={VariantId}, Index={Index}", variantId, valueIndex);
+                    return false;
                 }
 
-               
+                // Update variant value
                 variants[valueIndex] = variantValue;
-                variant.Variants = System.Text.Json.JsonSerializer.Serialize(variants, _jsonOptions);
+                variant.Variants = SerializeVariantValues(variants);
                 variant.UpdatedAt = DateTime.UtcNow;
 
                 await _context.SaveChangesAsync();
+                
+                _logger.LogInformation("Successfully updated variant value: VariantId={VariantId}, Index={Index}", variantId, valueIndex);
                 return true;
             }
-            catch
+            catch (Exception ex)
             {
+                _logger.LogError(ex, "Error updating variant value: VariantId={VariantId}, Index={Index}", variantId, valueIndex);
                 return false;
             }
         }
@@ -442,43 +519,54 @@ namespace EcommerceBackend.DataAccess.Repository
             try
             {
                 var variant = await _context.ProductVariants.FindAsync(variantId);
-                if (variant == null) return false;
+                if (variant == null) 
+                {
+                    _logger.LogWarning("Variant not found: VariantId={VariantId}", variantId);
+                    return false;
+                }
 
-                // Sử dụng object thay vì string để đồng bộ với các thao tác thêm/append
-                var variants = System.Text.Json.JsonSerializer.Deserialize<List<Dictionary<string, object>>>(
-                    variant.Variants ?? "[]", _jsonOptions) ?? new List<Dictionary<string, object>>();
+                // Get current variant values
+                var variants = DeserializeVariantValues(variant.Variants);
 
                 if (valueIndex < 0 || valueIndex >= variants.Count)
                 {
-                    return false; // Invalid index
+                    _logger.LogWarning("Invalid value index: VariantId={VariantId}, Index={Index}", variantId, valueIndex);
+                    return false;
                 }
 
                 variants.RemoveAt(valueIndex);
-                variant.Variants = System.Text.Json.JsonSerializer.Serialize(variants, _jsonOptions);
+                variant.Variants = SerializeVariantValues(variants);
                 variant.UpdatedAt = DateTime.UtcNow;
 
                 await _context.SaveChangesAsync();
+                
+                _logger.LogInformation("Successfully deleted variant value: VariantId={VariantId}, Index={Index}", variantId, valueIndex);
                 return true;
             }
-            catch
+            catch (Exception ex)
             {
+                _logger.LogError(ex, "Error deleting variant value: VariantId={VariantId}, Index={Index}", variantId, valueIndex);
                 return false;
             }
         }
 
-        public async Task<List<Dictionary<string, string>>> GetVariantValuesAsync(int variantId)
+        public async Task<List<Dictionary<string, object>>> GetVariantValuesAsync(int variantId)
         {
             try
             {
                 var variant = await _context.ProductVariants.FindAsync(variantId);
-                if (variant == null) return new List<Dictionary<string, string>>();
+                if (variant == null) 
+                {
+                    _logger.LogWarning("Variant not found: VariantId={VariantId}", variantId);
+                    return new List<Dictionary<string, object>>();
+                }
 
-                return JsonSerializer.Deserialize<List<Dictionary<string, string>>>(
-                    variant.Variants, _jsonOptions) ?? new List<Dictionary<string, string>>();
+                return DeserializeVariantValues(variant.Variants);
             }
-            catch
+            catch (Exception ex)
             {
-                return new List<Dictionary<string, string>>();
+                _logger.LogError(ex, "Error getting variant values: VariantId={VariantId}", variantId);
+                return new List<Dictionary<string, object>>();
             }
         }
 

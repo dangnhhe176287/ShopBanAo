@@ -230,14 +230,8 @@ namespace EcommerceBackend.BusinessObject.Services
             return await _productRepository.GetProductAttributesAsync(productId);
         }
 
-        public async Task<bool> AddVariantValueAsync(int variantId, Dictionary<string, string> variantValue)
+        public async Task<bool> AddVariantValueAsync(int variantId, Dictionary<string, object> variantValue)
         {
-            // Validate input
-            if (variantValue == null || !variantValue.Any())
-            {
-                return false;
-            }
-
             // Get variant to validate structure
             var productVariant = await _productRepository.GetProductVariantByIdAsync(variantId);
             if (productVariant == null)
@@ -252,7 +246,7 @@ namespace EcommerceBackend.BusinessObject.Services
             return await _productRepository.AddVariantValueAsync(variantId, variantValue);
         }
 
-        public async Task<bool> UpdateVariantValueAsync(int variantId, int valueIndex, Dictionary<string, string> variantValue)
+        public async Task<bool> UpdateVariantValueAsync(int variantId, int valueIndex, Dictionary<string, object> variantValue)
         {
             // Get variant to validate structure
             var productVariant = await _productRepository.GetProductVariantByIdAsync(variantId);
@@ -484,9 +478,9 @@ namespace EcommerceBackend.BusinessObject.Services
             }
         }
 
-        private List<Dictionary<string, object>> ConvertToObjectList(List<Dictionary<string, string>> list)
+        private List<Dictionary<string, object>> ConvertToObjectList(List<Dictionary<string, object>> list)
         {
-            return list.Select(dict => dict.ToDictionary(kvp => kvp.Key, kvp => (object)kvp.Value)).ToList();
+            return list;
         }
 
         private Dictionary<string, object> ConvertToObjectDict(Dictionary<string, string> dict)

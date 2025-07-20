@@ -25,6 +25,11 @@ namespace EcommerceBackend.DataAccess.Repository.UserRepository
         public User? GetById(int id) =>
             _context.Users.FirstOrDefault(u => u.UserId == id && u.IsDelete != true);
 
+        public User? GetByEmail(string email)
+        {
+            return _context.Users.FirstOrDefault(u => u.Email == email && u.IsDelete != true);
+        }
+
         public void Add(User user)
         {
             user.CreateDate = DateTime.UtcNow;
