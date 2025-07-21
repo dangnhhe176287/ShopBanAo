@@ -25,7 +25,14 @@ namespace EcommerceBackend.BusinessObject.Services
                 BlogId = b.BlogId,
                 BlogCategoryId = b.BlogCategoryId,
                 BlogTittle = b.BlogTittle,
-                BlogContent = b.BlogContent
+                BlogContent = b.BlogContent,
+                Summary = b.Summary,
+                ThumbnailUrl = b.ThumbnailUrl,
+                Tags = b.Tags,
+                CreatedAt = b.CreatedAt,
+                UpdatedAt = b.UpdatedAt,
+                Status = b.Status,
+                ViewCount = b.ViewCount
             });
         }
 
@@ -35,7 +42,13 @@ namespace EcommerceBackend.BusinessObject.Services
             {
                 BlogCategoryId = dto.BlogCategoryId,
                 BlogTittle = dto.BlogTittle,
-                BlogContent = dto.BlogContent
+                BlogContent = dto.BlogContent,
+                Summary = dto.Summary,
+                ThumbnailUrl = dto.ThumbnailUrl,
+                Tags = dto.Tags,
+                CreatedAt = DateTime.UtcNow,
+                Status = dto.Status,
+                ViewCount = 0
             };
 
             await _repository.AddAsync(blog);
@@ -49,7 +62,14 @@ namespace EcommerceBackend.BusinessObject.Services
                 BlogId = b.BlogId,
                 BlogCategoryId = b.BlogCategoryId,
                 BlogTittle = b.BlogTittle,
-                BlogContent = b.BlogContent
+                BlogContent = b.BlogContent,
+                Summary = b.Summary,
+                ThumbnailUrl = b.ThumbnailUrl,
+                Tags = b.Tags,
+                CreatedAt = b.CreatedAt,
+                UpdatedAt = b.UpdatedAt,
+                Status = b.Status,
+                ViewCount = b.ViewCount
             };
         }
 
@@ -60,7 +80,14 @@ namespace EcommerceBackend.BusinessObject.Services
                 BlogId = dto.BlogId,
                 BlogCategoryId = dto.BlogCategoryId,
                 BlogTittle = dto.BlogTittle,
-                BlogContent = dto.BlogContent
+                BlogContent = dto.BlogContent,
+                Summary = dto.Summary,
+                ThumbnailUrl = dto.ThumbnailUrl,
+                Tags = dto.Tags,
+                CreatedAt = dto.CreatedAt,
+                UpdatedAt = DateTime.UtcNow,
+                Status = dto.Status,
+                ViewCount = dto.ViewCount
             };
 
             await _repository.UpdateAsync(blog);
@@ -78,8 +105,20 @@ namespace EcommerceBackend.BusinessObject.Services
                 BlogId = b.BlogId,
                 BlogCategoryId = b.BlogCategoryId,
                 BlogTittle = b.BlogTittle,
-                BlogContent = b.BlogContent
+                BlogContent = b.BlogContent,
+                Summary = b.Summary,
+                ThumbnailUrl = b.ThumbnailUrl,
+                Tags = b.Tags,
+                CreatedAt = b.CreatedAt,
+                UpdatedAt = b.UpdatedAt,
+                Status = b.Status,
+                ViewCount = b.ViewCount
             });
+        }
+
+        public async Task IncreaseViewCountAsync(int id)
+        {
+            await _repository.IncreaseViewCountAsync(id);
         }
 
         //public async Task<List<BlogDto>> LoadBlogsAsync()
