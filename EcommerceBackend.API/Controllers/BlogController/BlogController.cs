@@ -63,5 +63,34 @@ namespace EcommerceBackend.API.Controllers.BlogController
             await _service.DeleteAsync(id);
             return Ok();
         }
+
+        [HttpPut("increase-view/{id}")]
+        public async Task<IActionResult> IncreaseView(int id)
+        {
+            await _service.IncreaseViewCountAsync(id);
+            return Ok();
+        }
+
+        [HttpPost("upload-thumbnail")]
+        public async Task<IActionResult> UploadThumbnail([FromForm] IFormFile file)
+        {
+            if (file == null || file.Length == 0)
+                return BadRequest("No file uploaded");
+
+            var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "thumbnails");
+            if (!Directory.Exists(uploadsFolder))
+                Directory.CreateDirectory(uploadsFolder);
+
+            var fileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
+            var filePath = Path.Combine(uploadsFolder, fileName);
+
+            using (var stream = new FileStream(filePath, FileMode.Create))
+            {
+                await file.CopyToAsync(stream);
+            }
+
+            var url = $"/uploads/thumbnails/{fileName}";
+            return Ok(new { url });
+        }
     }
 }

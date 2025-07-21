@@ -26,12 +26,14 @@ namespace EcommerceBackend.DataAccess.Repository.BlogRepository
 
         public async Task AddAsync(Blog blog)
         {
+            // Đảm bảo các trường mới được lưu
             _context.Blogs.Add(blog);
             await _context.SaveChangesAsync();
         }
 
         public async Task UpdateAsync(Blog blog)
         {
+            // Đảm bảo các trường mới được cập nhật
             _context.Blogs.Update(blog);
             await _context.SaveChangesAsync();
         }
@@ -64,5 +66,14 @@ namespace EcommerceBackend.DataAccess.Repository.BlogRepository
                 .ToListAsync();
         }
 
+        public async Task IncreaseViewCountAsync(int id)
+        {
+            var blog = await _context.Blogs.FirstOrDefaultAsync(b => b.BlogId == id);
+            if (blog != null)
+            {
+                blog.ViewCount++;
+                await _context.SaveChangesAsync();
+            }
+        }
     }
 }
