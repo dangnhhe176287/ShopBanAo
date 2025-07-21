@@ -31,9 +31,6 @@ namespace EcommerceBackend.DataAccess.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("BlogId"), 1L, 1);
 
-                    b.Property<int?>("AuthorId")
-                        .HasColumnType("int");
-
                     b.Property<int?>("BlogCategoryId")
                         .HasColumnType("int")
                         .HasColumnName("Blog_category_id");
