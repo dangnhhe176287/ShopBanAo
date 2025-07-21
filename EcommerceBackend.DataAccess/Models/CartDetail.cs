@@ -12,6 +12,7 @@ namespace EcommerceBackend.DataAccess.Models
         public string? ProductName { get; set; }
         public int? Quantity { get; set; }
         public decimal? Price { get; set; }
+        public string? VariantAttributes { get; set; } // Lưu JSON các thuộc tính biến thể nhỏ (ví dụ: {"size":"S","color":"Black"})
 
         public virtual Cart? Cart { get; set; }
         public virtual Product? Product { get; set; }

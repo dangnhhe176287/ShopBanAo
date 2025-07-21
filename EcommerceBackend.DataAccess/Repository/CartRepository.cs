@@ -67,6 +67,7 @@ namespace EcommerceBackend.DataAccess.Repository
                 }
             }
             cart.TotalQuantity = cart.CartDetails.Where(cd => cd.Quantity > 0).Sum(cd => cd.Quantity ?? 0);
+            cart.AmountDue = cart.CartDetails.Where(cd => cd.Quantity > 0).Sum(cd => (cd.Price ?? 0) * (cd.Quantity ?? 0));
             await _context.SaveChangesAsync();
         }
 
@@ -96,11 +97,12 @@ namespace EcommerceBackend.DataAccess.Repository
             }
             else
             {
-                // Nếu đã có, chỉ tăng thêm 1
-                cartDetail.Quantity = (cartDetail.Quantity ?? 0) + 1;
+                // Cộng dồn đúng số lượng client gửi lên
+                cartDetail.Quantity = (cartDetail.Quantity ?? 0) + quantity;
                 _context.CartDetails.Update(cartDetail);
             }
             cart.TotalQuantity = cart.CartDetails.Where(cd => cd.Quantity > 0).Sum(cd => cd.Quantity ?? 0);
+            cart.AmountDue = cart.CartDetails.Where(cd => cd.Quantity > 0).Sum(cd => (cd.Price ?? 0) * (cd.Quantity ?? 0));
             await _context.SaveChangesAsync();
         }
 
@@ -122,6 +124,7 @@ namespace EcommerceBackend.DataAccess.Repository
                     _context.CartDetails.Remove(cartDetail);
                 }
                 cart.TotalQuantity = cart.CartDetails.Where(cd => cd.Quantity > 0).Sum(cd => cd.Quantity ?? 0);
+                cart.AmountDue = cart.CartDetails.Where(cd => cd.Quantity > 0).Sum(cd => (cd.Price ?? 0) * (cd.Quantity ?? 0));
                 await _context.SaveChangesAsync();
             }
         }

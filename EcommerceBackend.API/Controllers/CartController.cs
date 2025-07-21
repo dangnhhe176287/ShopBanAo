@@ -54,7 +54,8 @@ namespace EcommerceBackend.API.Controllers
                     ProductName = product?.Name ?? $"ID: {cd.ProductId}",
                     Quantity = (int)cd.Quantity,
                     Price = cd.Price,
-                    ImageUrl = imageUrl
+                    ImageUrl = imageUrl,
+                    VariantId = !string.IsNullOrEmpty(cd.VariantId) ? int.Parse(cd.VariantId) : 0
                 });
             }
 
@@ -78,7 +79,7 @@ namespace EcommerceBackend.API.Controllers
         [HttpDelete("{userId}/remove/{productId}/{variantId}")]
         public async Task<IActionResult> RemoveFromCart(int userId, int productId, int variantId)
         {
-            await _cartService.AddToCart(userId, productId, variantId, 0); // Đặt quantity = 0 để xóa
+            await _cartService.UpdateCartItem(userId, productId, variantId, 0); // Đặt quantity = 0 để xóa
             return Ok();
         }
     }
