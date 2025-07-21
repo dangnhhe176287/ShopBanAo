@@ -71,7 +71,7 @@ namespace EcommerceBackend.DataAccess.Repository
             await _context.SaveChangesAsync();
         }
 
-        public async Task AddToCartAsync(int userId, int productId, int variantId, int quantity)
+        public async Task AddToCartAsync(int userId, int productId, int variantId, int quantity, string variantAttributes)
         {
             var cart = await _context.Carts.Include(c => c.CartDetails)
                 .FirstOrDefaultAsync(c => c.CustomerId == userId);
@@ -81,13 +81,14 @@ namespace EcommerceBackend.DataAccess.Repository
                 await _context.Carts.AddAsync(cart);
                 await _context.SaveChangesAsync();
             }
-            var cartDetail = cart.CartDetails.FirstOrDefault(cd => cd.ProductId == productId && cd.VariantId == variantId.ToString());
+            var cartDetail = cart.CartDetails.FirstOrDefault(cd => cd.ProductId == productId && cd.VariantId == variantId.ToString() && cd.VariantAttributes == variantAttributes);
             if (cartDetail == null)
             {
                 var product = await _context.Products.FirstOrDefaultAsync(p => p.ProductId == productId);
                 cartDetail = new CartDetail {
                     ProductId = productId,
                     VariantId = variantId.ToString(),
+                    VariantAttributes = variantAttributes,
                     Quantity = quantity,
                     CartId = cart.CartId,
                     ProductName = product?.Name,
@@ -106,12 +107,12 @@ namespace EcommerceBackend.DataAccess.Repository
             await _context.SaveChangesAsync();
         }
 
-        public async Task UpdateCartItemAsync(int userId, int productId, int variantId, int quantity)
+        public async Task UpdateCartItemAsync(int userId, int productId, int variantId, int quantity, string variantAttributes)
         {
             var cart = await _context.Carts.Include(c => c.CartDetails)
                 .FirstOrDefaultAsync(c => c.CustomerId == userId);
             if (cart == null) return;
-            var cartDetail = cart.CartDetails.FirstOrDefault(cd => cd.ProductId == productId && cd.VariantId == variantId.ToString());
+            var cartDetail = cart.CartDetails.FirstOrDefault(cd => cd.ProductId == productId && cd.VariantId == variantId.ToString() && cd.VariantAttributes == variantAttributes);
             if (cartDetail != null)
             {
                 if (quantity > 0)

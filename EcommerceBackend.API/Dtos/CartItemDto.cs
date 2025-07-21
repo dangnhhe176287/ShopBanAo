@@ -8,5 +8,6 @@ namespace EcommerceBackend.API.Dtos
         public decimal? Price { get; set; }
         public string? ImageUrl { get; set; }
         public int VariantId { get; set; }
+        public string? VariantAttributes { get; set; } // Lưu JSON các thuộc tính biến thể nhỏ
     }
 } 
