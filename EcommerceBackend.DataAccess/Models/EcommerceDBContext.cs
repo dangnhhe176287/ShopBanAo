@@ -160,6 +160,20 @@ namespace EcommerceBackend.DataAccess.Models
 
                 entity.Property(e => e.TotalQuantity).HasColumnName("Total_quantity");
 
+                entity.Property(e => e.ShippingAddress)
+                    .HasMaxLength(500)
+                    .HasColumnName("Shipping_address");
+
+                entity.Property(e => e.CreatedAt)
+                    .HasColumnType("datetime2")
+                    .HasColumnName("Created_at")
+                    .HasDefaultValueSql("GETUTCDATE()");
+
+                entity.Property(e => e.UpdatedAt)
+                    .HasColumnType("datetime2")
+                    .HasColumnName("Updated_at")
+                    .HasDefaultValueSql("GETUTCDATE()");
+
                 entity.HasOne(d => d.Customer)
                     .WithMany(p => p.Orders)
                     .HasForeignKey(d => d.CustomerId)

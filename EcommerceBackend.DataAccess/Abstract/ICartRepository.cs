@@ -9,5 +9,6 @@ namespace EcommerceBackend.DataAccess.Abstract
         Task AddOrUpdateCartItemAsync(int userId, int productId, int quantity);
         Task AddToCartAsync(int userId, int productId, int variantId, int quantity, string variantAttributes);
         Task UpdateCartItemAsync(int userId, int productId, int variantId, int quantity, string variantAttributes);
+        Task ClearCartAsync(int userId);
     }
 } 

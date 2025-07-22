@@ -83,5 +83,12 @@ namespace EcommerceBackend.API.Controllers
             await _cartService.UpdateCartItem(userId, productId, variantId, 0, variantAttributes); // Đặt quantity = 0 để xóa
             return Ok();
         }
+
+        [HttpDelete("{userId}/clear")]
+        public async Task<IActionResult> ClearCart(int userId)
+        {
+            await _cartService.ClearCart(userId);
+            return Ok();
+        }
     }
 } 

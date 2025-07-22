@@ -186,6 +186,12 @@ namespace EcommerceBackend.DataAccess.Migrations
                         .HasColumnType("decimal(18,2)")
                         .HasColumnName("Amount_due");
 
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("Created_at")
+                        .HasDefaultValueSql("GETUTCDATE()");
+
                     b.Property<int?>("CustomerId")
                         .HasColumnType("int")
                         .HasColumnName("Customer_id");
@@ -203,9 +209,20 @@ namespace EcommerceBackend.DataAccess.Migrations
                         .HasColumnType("int")
                         .HasColumnName("Payment_method_id");
 
+                    b.Property<string>("ShippingAddress")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)")
+                        .HasColumnName("Shipping_address");
+
                     b.Property<int?>("TotalQuantity")
                         .HasColumnType("int")
                         .HasColumnName("Total_quantity");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("Updated_at")
+                        .HasDefaultValueSql("GETUTCDATE()");
 
                     b.HasKey("OrderId");
 
@@ -245,6 +262,9 @@ namespace EcommerceBackend.DataAccess.Migrations
 
                     b.Property<int?>("Quantity")
                         .HasColumnType("int");
+
+                    b.Property<string>("VariantAttributes")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("VariantId")
                         .HasMaxLength(50)

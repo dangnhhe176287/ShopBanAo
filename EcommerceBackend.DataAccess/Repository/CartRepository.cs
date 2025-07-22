@@ -129,5 +129,18 @@ namespace EcommerceBackend.DataAccess.Repository
                 await _context.SaveChangesAsync();
             }
         }
+
+        public async Task ClearCartAsync(int userId)
+        {
+            var cart = await _context.Carts.Include(c => c.CartDetails)
+                .FirstOrDefaultAsync(c => c.CustomerId == userId);
+            if (cart != null)
+            {
+                _context.CartDetails.RemoveRange(cart.CartDetails);
+                cart.TotalQuantity = 0;
+                cart.AmountDue = 0;
+                await _context.SaveChangesAsync();
+            }
+        }
     }
 } 

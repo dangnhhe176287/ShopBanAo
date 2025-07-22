@@ -35,6 +35,8 @@
         public int? PaymentMethodId { get; set; }
         public string? OrderNote { get; set; }
         public int? OrderStatusId { get; set; }
+        public DateTime CreatedAt { get; set; }
+        public DateTime UpdatedAt { get; set; }
         public List<OrderDetailResponseDto> OrderDetails { get; set; }
     }
 
@@ -44,6 +46,7 @@
         public int? PaymentMethodId { get; set; }
         public int? OrderStatusId { get; set; }
         public string OrderNote { get; set; }
+        public decimal ShippingFee { get; set; } = 0;
         public List<OrderDetailRequestDto> OrderDetails { get; set; } = new List<OrderDetailRequestDto>();  
     }
 
@@ -52,6 +55,7 @@
         public int? CustomerId { get; set; } 
         public int? PaymentMethodId { get; set; }
         public int? OrderStatusId { get; set; }
+        public string? OrderNote { get; set; }
         public List<OrderDetailRequestDto> OrderDetails { get; set; } = new List<OrderDetailRequestDto>();
     }
 }

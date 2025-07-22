@@ -1,6 +1,7 @@
 ﻿using EcommerceBackend.API.Dtos.Sale;
 using EcommerceBackend.BusinessObject.Services.SaleService.OrderService;
 using EcommerceBackend.BusinessObject.Services.SaleService.ProductService;
+using EcommerceBackend.BusinessObject.Services;
 using EcommerceBackend.DataAccess.Models;
 using EcommerceBackend.DataAccess.Repository.SaleRepository.OrderRepo;
 using EcommerceBackend.DataAccess.Repository.SaleRepository.ProductRepo;
@@ -17,15 +18,18 @@ namespace EcommerceBackend.API.Controllers.SaleController
         private readonly ISaleOrderRepository _orderRepository;
         private readonly ISaleOrderService _saleService;
         private readonly IProductRepository _productRepository;
+        private readonly CartService _cartService;
 
         public SaleOrderController(
             ISaleOrderRepository orderRepository,
             ISaleOrderService saleService,
-            IProductRepository productRepository)
+            IProductRepository productRepository,
+            CartService cartService)
         {
             _orderRepository = orderRepository ?? throw new ArgumentNullException(nameof(orderRepository));
             _saleService = saleService ?? throw new ArgumentNullException(nameof(saleService));
             _productRepository = productRepository ?? throw new ArgumentNullException(nameof(productRepository));
+            _cartService = cartService ?? throw new ArgumentNullException(nameof(cartService));
         }
 
         [HttpPost]
@@ -97,6 +101,9 @@ namespace EcommerceBackend.API.Controllers.SaleController
                     order.AmountDue += product.BasePrice * detail.Quantity;
                 }
 
+                // Cộng thêm phí ship vào AmountDue
+                order.AmountDue += orderDto.ShippingFee;
+
                 await _saleService.CreateOrderAsync(order);
                 await _orderRepository.SaveChangesAsync();
 
@@ -105,6 +112,9 @@ namespace EcommerceBackend.API.Controllers.SaleController
                     detail.OrderId = order.OrderId;
                 }
                 await _orderRepository.SaveChangesAsync();
+
+                // Xóa cart sau khi đặt hàng thành công
+                await _cartService.ClearCart(orderDto.CustomerId);
 
                 var responseDto = new OrderResponseDto
                 {
@@ -115,6 +125,8 @@ namespace EcommerceBackend.API.Controllers.SaleController
                     PaymentMethodId = order.PaymentMethodId,
                     OrderNote = order.OrderNote,
                     OrderStatusId = order.OrderStatusId,
+                    CreatedAt = order.CreatedAt,
+                    UpdatedAt = order.UpdatedAt,
                     OrderDetails = order.OrderDetails?.Select(od => new OrderDetailResponseDto
                     {
                         ProductId = od.ProductId,
@@ -182,6 +194,8 @@ namespace EcommerceBackend.API.Controllers.SaleController
                 PaymentMethodId = order.PaymentMethodId,
                 OrderNote = order.OrderNote,
                 OrderStatusId = order.OrderStatusId,
+                CreatedAt = order.CreatedAt,
+                UpdatedAt = order.UpdatedAt,
                 OrderDetails = order.OrderDetails?.Select(od => new OrderDetailResponseDto
                 {
                     ProductId = od.ProductId,
@@ -219,6 +233,8 @@ namespace EcommerceBackend.API.Controllers.SaleController
                 }
 
                 existingOrder.PaymentMethodId = orderDto.PaymentMethodId ?? existingOrder.PaymentMethodId;
+                existingOrder.OrderNote = orderDto.OrderNote ?? existingOrder.OrderNote;
+                existingOrder.UpdatedAt = DateTime.UtcNow;
 
                 var existingDetails = existingOrder.OrderDetails.ToList();
                 var updatedDetails = new HashSet<OrderDetail>(existingDetails, new OrderDetailEqualityComparer());

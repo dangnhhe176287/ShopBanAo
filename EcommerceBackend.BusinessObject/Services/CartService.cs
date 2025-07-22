@@ -25,5 +25,10 @@ namespace EcommerceBackend.BusinessObject.Services
         {
             return await _cartRepository.GetCartByUserIdAsync(userId);
         }
+
+        public async Task ClearCart(int userId)
+        {
+            await _cartRepository.ClearCartAsync(userId);
+        }
     }
 } 
