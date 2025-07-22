@@ -51,11 +51,45 @@ namespace EcommerceBackend.API.Controllers.UserController
         }
 
         [HttpPut("{id}")]
-        public IActionResult Put(int id, [FromBody] UserDto userDto)
+        [AllowAnonymous] // Cho phép update user mà không cần authentication
+        public IActionResult Put(int id, [FromBody] UpdateUserDto updateUserDto)
         {
-            if (id != userDto.UserId) return BadRequest();
-            _service.Update(userDto);
-            return NoContent();
+            try
+            {
+                Console.WriteLine($"Updating user with ID: {id}");
+                Console.WriteLine($"User data: {updateUserDto.UserName}, {updateUserDto.Email}, {updateUserDto.Phone}, {updateUserDto.Address}");
+                
+                if (id != updateUserDto.UserId) 
+                {
+                    Console.WriteLine($"ID mismatch: {id} != {updateUserDto.UserId}");
+                    return BadRequest("ID mismatch");
+                }
+                
+                // Convert UpdateUserDto to UserDto
+                var userDto = new UserDto
+                {
+                    UserId = updateUserDto.UserId,
+                    RoleId = updateUserDto.RoleId,
+                    Email = updateUserDto.Email,
+                    Password = updateUserDto.Password ?? "", // Use empty string if null
+                    Phone = updateUserDto.Phone ?? "",
+                    UserName = updateUserDto.UserName ?? "",
+                    DateOfBirth = updateUserDto.DateOfBirth,
+                    Address = updateUserDto.Address ?? "",
+                    CreateDate = updateUserDto.CreateDate,
+                    Status = updateUserDto.Status,
+                    IsDelete = updateUserDto.IsDelete
+                };
+                
+                _service.Update(userDto);
+                Console.WriteLine("User updated successfully");
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error updating user: {ex.Message}");
+                return BadRequest($"Error updating user: {ex.Message}");
+            }
         }
 
         [HttpDelete("{id}")]

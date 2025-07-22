@@ -47,7 +47,13 @@ namespace EcommerceBackend.BusinessObject.Services.UserService
              
             user.RoleId = userDto.RoleId;
             user.Email = userDto.Email;
-            user.Password = userDto.Password;
+            
+            // Chỉ update password nếu có giá trị
+            if (!string.IsNullOrEmpty(userDto.Password))
+            {
+                user.Password = userDto.Password;
+            }
+            
             user.Phone = userDto.Phone;
             user.UserName = userDto.UserName;
             user.DateOfBirth = userDto.DateOfBirth;

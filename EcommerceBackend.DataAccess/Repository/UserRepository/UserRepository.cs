@@ -39,8 +39,21 @@ namespace EcommerceBackend.DataAccess.Repository.UserRepository
 
         public void Update(User user)
         {
-            _context.Users.Update(user);
-            _context.SaveChanges();
+            try
+            {
+                Console.WriteLine($"Repository: Updating user {user.UserId}");
+                Console.WriteLine($"Repository: User data - {user.UserName}, {user.Email}, {user.Phone}, {user.Address}");
+                
+                _context.Users.Update(user);
+                _context.SaveChanges();
+                
+                Console.WriteLine("Repository: User updated successfully in database");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Repository: Error updating user - {ex.Message}");
+                throw;
+            }
         }
 
         public void Delete(int id)
