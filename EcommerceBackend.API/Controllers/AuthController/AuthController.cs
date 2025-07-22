@@ -1,5 +1,6 @@
 ﻿using EcommerceBackend.BusinessObject.Abstract.AuthAbstract;
 using EcommerceBackend.BusinessObject.dtos.AuthDto;
+using EcommerceBackend.BusinessObject.dtos.UserDto;
 using EcommerceBackend.BusinessObject.Services.UserService;
 using EcommerceBackend.DataAccess.Models;
 using Microsoft.AspNetCore.Authentication.Google;
@@ -264,6 +265,28 @@ namespace EcommerceBackend.API.Controllers.AuthController
             catch (Exception ex)
             {
                 return StatusCode(500, new { message = "An error occurred while resetting password.", error = ex.Message });
+            }
+        }
+
+        [HttpPost("change-password")]
+        public IActionResult ChangePassword([FromBody] ChangePasswordRequestDto request)
+        {
+            if (request == null || request.UserId <= 0 || string.IsNullOrWhiteSpace(request.OldPassword) || string.IsNullOrWhiteSpace(request.NewPassword))
+            {
+                return BadRequest(new { message = "UserId, old password, and new password are required." });
+            }
+            if (request.NewPassword.Length < 6 || request.NewPassword.Length > 255)
+            {
+                return BadRequest(new { message = "New password must be between 6 and 255 characters." });
+            }
+            try
+            {
+                _userService.ChangePassword(request.UserId, request.OldPassword, request.NewPassword);
+                return Ok(new { message = "Password changed successfully." });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
             }
         }
 
