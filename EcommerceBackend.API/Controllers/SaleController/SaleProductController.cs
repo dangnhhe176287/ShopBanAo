@@ -69,7 +69,7 @@ namespace EcommerceBackend.API.Controllers.SaleController
                 ProductCategoryId = productDto.ProductCategoryId,
                 Brand = productDto.Brand,
                 BasePrice = productDto.BasePrice,
-                AvailableAttributes = productDto.AvailableAttributes, 
+                AvailableAttributes = productDto.AvailableAttributes,
                 Status = productDto.Status,
                 IsDelete = productDto.IsDelete,
                 CreatedAt = DateTime.UtcNow,
@@ -99,7 +99,7 @@ namespace EcommerceBackend.API.Controllers.SaleController
                 product.Variants = productDto.Variants.Select(v => new ProductVariant
                 {
                     ProductId = product.ProductId,
-                    Attributes = productDto.AvailableAttributes, 
+                    Attributes = productDto.AvailableAttributes,
                     Variants = v.Variants,
                     CreatedAt = DateTime.UtcNow,
                     UpdatedAt = DateTime.UtcNow
@@ -143,7 +143,7 @@ namespace EcommerceBackend.API.Controllers.SaleController
         }
 
         [HttpGet("categories")]
-        public async Task<IActionResult> GetAllCategories() 
+        public async Task<IActionResult> GetAllCategories()
         {
             var categories = await _categoryService.GetAllCategoriesAsync();
             var responseDtos = categories.Select(c => new ProductCategoryResponseDto
@@ -170,7 +170,7 @@ namespace EcommerceBackend.API.Controllers.SaleController
             {
                 return NotFound("Sản phẩm không tồn tại.");
             }
-             
+
             product.Name = productDto.Name;
             product.Description = productDto.Description;
             product.ProductCategoryId = productDto.ProductCategoryId;
@@ -180,12 +180,12 @@ namespace EcommerceBackend.API.Controllers.SaleController
             product.Status = productDto.Status;
             product.IsDelete = productDto.IsDelete;
             product.UpdatedAt = DateTime.UtcNow;
-             
+
             //if (product.Variants != null && product.Variants.Any())
             //{
             //    product.Variants.Clear();
             //}
-             
+
             if (productDto.Variants != null)
             {
                 product.Variants = productDto.Variants.Select(v => new ProductVariant
@@ -196,7 +196,7 @@ namespace EcommerceBackend.API.Controllers.SaleController
                     UpdatedAt = DateTime.UtcNow
                 }).ToList();
             }
-             
+
             //if (product.ProductImages != null && product.ProductImages.Any())
             //{
             //    product.ProductImages.Clear();
