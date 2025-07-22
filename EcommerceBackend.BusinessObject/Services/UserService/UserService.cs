@@ -26,9 +26,9 @@ namespace EcommerceBackend.BusinessObject.Services.UserService
             var user = new User
             {
                 //UserId = userDto.UserId,
-                RoleId = userDto.RoleId,  
+                RoleId = userDto.RoleId,
                 Email = userDto.Email,
-                Password = userDto.Password,  
+                Password = userDto.Password,
                 Phone = userDto.Phone,
                 UserName = userDto.UserName,
                 DateOfBirth = userDto.DateOfBirth,
@@ -37,14 +37,14 @@ namespace EcommerceBackend.BusinessObject.Services.UserService
                 Status = userDto.Status,
                 IsDelete = userDto.IsDelete
             };
-             _repo.Add(user);
+            _repo.Add(user);
         }
         public void Update(UserDto userDto)
-        { 
+        {
             var user = _repo.GetById(userDto.UserId);
             if (user == null)
                 throw new Exception($"User with ID {userDto.UserId} not found");
-             
+
             user.RoleId = userDto.RoleId;
             user.Email = userDto.Email;
             
@@ -57,14 +57,25 @@ namespace EcommerceBackend.BusinessObject.Services.UserService
             user.Phone = userDto.Phone;
             user.UserName = userDto.UserName;
             user.DateOfBirth = userDto.DateOfBirth;
-            user.Address = userDto.Address; 
+            user.Address = userDto.Address;
             user.Status = userDto.Status;
             user.IsDelete = userDto.IsDelete;
-             
+
             _repo.Update(user);
         }
 
         public void Delete(int id) => _repo.Delete(id);
+
+        public void ChangePassword(int userId, string oldPassword, string newPassword)
+        {
+            var user = _repo.GetById(userId);
+            if (user == null)
+                throw new Exception($"User with ID {userId} not found");
+            if (user.Password != oldPassword)
+                throw new Exception("Old password is incorrect");
+            user.Password = newPassword;
+            _repo.Update(user);
+        }
     }
 
 }

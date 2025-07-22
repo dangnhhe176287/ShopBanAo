@@ -16,6 +16,8 @@ namespace EcommerceBackend.BusinessObject.Services.UserService
         void Update(UserDto user);
         void Delete(int id);
         User? GetByEmail(string email);
+        void ChangePassword(int userId, string oldPassword, string newPassword);
+
     }
 
 }
