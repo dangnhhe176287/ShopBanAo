@@ -51,12 +51,12 @@ namespace EcommerceBackend.API.Controllers.SaleController
                     PaymentMethodId = orderDto.PaymentMethodId,
                     OrderStatusId = 1,
                     OrderNote = orderDto.OrderNote,
+                    ShippingAddress = orderDto.ShippingAddress, // Set shipping address
                     OrderDetails = new HashSet<OrderDetail>()
                 };
 
                 foreach (var detail in orderDto.OrderDetails)
                 {
-                    Console.WriteLine($"Processing OrderDetail: ProductId = {detail.ProductId}, Quantity = {detail.Quantity}, VariantId = {detail.VariantId}");
                     if (detail.Quantity <= 0)
                     {
                         return BadRequest($"Số lượng sản phẩm {detail.ProductId} phải lớn hơn 0.");
@@ -70,12 +70,10 @@ namespace EcommerceBackend.API.Controllers.SaleController
                     var product = await _productRepository.GetProductByIdAsync(detail.ProductId.Value);
                     if (product == null || product.IsDelete)
                     {
-                        Console.WriteLine($"Product with ID {detail.ProductId} not found or deleted.");
                         return BadRequest($"Sản phẩm với ID {detail.ProductId} không tồn tại hoặc đã bị xóa.");
                     }
                     if (product.Status != 1)
                     {
-                        Console.WriteLine($"Product with ID {detail.ProductId} is not available (Status = {product.Status}).");
                         return BadRequest($"Sản phẩm với ID {detail.ProductId} không khả dụng. (Status: {product.Status})");
                     }
 
@@ -84,7 +82,6 @@ namespace EcommerceBackend.API.Controllers.SaleController
                         var variant = await _productRepository.GetProductVariantAsync(detail.ProductId.Value, detail.VariantId);
                         if (variant == null)
                         {
-                            Console.WriteLine($"Variant with ID {detail.VariantId} not found for ProductId {detail.ProductId}.");
                             return BadRequest($"Biến thể với ID {detail.VariantId} không tồn tại cho sản phẩm {detail.ProductId}.");
                         }
                     }
@@ -125,6 +122,7 @@ namespace EcommerceBackend.API.Controllers.SaleController
                     PaymentMethodId = order.PaymentMethodId,
                     OrderNote = order.OrderNote,
                     OrderStatusId = order.OrderStatusId,
+                    ShippingAddress = order.ShippingAddress, // Include shipping address
                     CreatedAt = order.CreatedAt,
                     UpdatedAt = order.UpdatedAt,
                     OrderDetails = order.OrderDetails?.Select(od => new OrderDetailResponseDto
@@ -141,13 +139,11 @@ namespace EcommerceBackend.API.Controllers.SaleController
             }
             catch (ArgumentException ex)
             {
-                Console.WriteLine($"ArgumentException: {ex.Message}");
                 return BadRequest(ex.Message);
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Exception: {ex.Message}, StackTrace: {ex.StackTrace}, InnerException: {ex.InnerException?.Message}");
-                return StatusCode(500, new { Message = "Đã xảy ra lỗi server khi tạo đơn hàng.", Error = ex.InnerException?.Message ?? ex.Message });
+                return StatusCode(500, new { Message = "Đã xảy ra lỗi server khi tạo đơn hàng.", Error = ex.Message });
             }
         }
 
@@ -196,6 +192,7 @@ namespace EcommerceBackend.API.Controllers.SaleController
                 OrderStatusId = order.OrderStatusId,
                 CreatedAt = order.CreatedAt,
                 UpdatedAt = order.UpdatedAt,
+                ShippingAddress = order.ShippingAddress,
                 OrderDetails = order.OrderDetails?.Select(od => new OrderDetailResponseDto
                 {
                     ProductId = od.ProductId,
@@ -234,6 +231,7 @@ namespace EcommerceBackend.API.Controllers.SaleController
 
                 existingOrder.PaymentMethodId = orderDto.PaymentMethodId ?? existingOrder.PaymentMethodId;
                 existingOrder.OrderNote = orderDto.OrderNote ?? existingOrder.OrderNote;
+                existingOrder.ShippingAddress = orderDto.ShippingAddress ?? existingOrder.ShippingAddress; // Update shipping address
                 existingOrder.UpdatedAt = DateTime.UtcNow;
 
                 var existingDetails = existingOrder.OrderDetails.ToList();
@@ -241,22 +239,18 @@ namespace EcommerceBackend.API.Controllers.SaleController
 
                 foreach (var detail in orderDto.OrderDetails)
                 {
-                    Console.WriteLine($"Processing OrderDetail: ProductId = {detail.ProductId}, Quantity = {detail.Quantity}, VariantId = {detail.VariantId}");
                     if (!detail.ProductId.HasValue || detail.ProductId <= 0 || detail.Quantity <= 0)
                     {
-                        Console.WriteLine($"ProductId {detail.ProductId} or Quantity {detail.Quantity} is invalid, skipping update.");
-                        continue;
+                        continue; // Skip invalid details
                     }
 
                     var product = await _productRepository.GetProductByIdAsync(detail.ProductId.Value);
                     if (product == null || product.IsDelete)
                     {
-                        Console.WriteLine($"Product with ID {detail.ProductId} not found or deleted.");
                         return BadRequest($"Sản phẩm với ID {detail.ProductId} không tồn tại hoặc đã bị xóa.");
                     }
                     if (product.Status != 1)
                     {
-                        Console.WriteLine($"Product with ID {detail.ProductId} is not available (Status = {product.Status}).");
                         return BadRequest($"Sản phẩm với ID {detail.ProductId} không khả dụng. (Status: {product.Status})");
                     }
 
@@ -265,7 +259,6 @@ namespace EcommerceBackend.API.Controllers.SaleController
                         var variant = await _productRepository.GetProductVariantAsync(detail.ProductId.Value, detail.VariantId);
                         if (variant == null)
                         {
-                            Console.WriteLine($"Variant with ID {detail.VariantId} not found for ProductId {detail.ProductId}.");
                             return BadRequest($"Biến thể với ID {detail.VariantId} không tồn tại cho sản phẩm {detail.ProductId}.");
                         }
                     }
@@ -312,6 +305,9 @@ namespace EcommerceBackend.API.Controllers.SaleController
                     PaymentMethodId = existingOrder.PaymentMethodId,
                     OrderNote = existingOrder.OrderNote,
                     OrderStatusId = existingOrder.OrderStatusId,
+                    ShippingAddress = existingOrder.ShippingAddress, // Include updated shipping address
+                    CreatedAt = existingOrder.CreatedAt,
+                    UpdatedAt = existingOrder.UpdatedAt,
                     OrderDetails = existingOrder.OrderDetails?.Select(od => new OrderDetailResponseDto
                     {
                         ProductId = od.ProductId,
@@ -326,13 +322,11 @@ namespace EcommerceBackend.API.Controllers.SaleController
             }
             catch (ArgumentException ex)
             {
-                Console.WriteLine($"ArgumentException: {ex.Message}");
                 return BadRequest(ex.Message);
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Exception: {ex.Message}, StackTrace: {ex.StackTrace}, InnerException: {ex.InnerException?.Message}");
-                return StatusCode(500, new { Message = "Đã xảy ra lỗi server khi cập nhật đơn hàng.", Error = ex.InnerException?.Message ?? ex.Message });
+                return StatusCode(500, new { Message = "Đã xảy ra lỗi server khi cập nhật đơn hàng.", Error = ex.Message });
             }
         }
 

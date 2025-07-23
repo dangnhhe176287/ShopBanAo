@@ -2,10 +2,11 @@
 {
     public class OrderDetailRequestDto
     {
-        public int? ProductId { get; set; }  
-        public int Quantity { get; set; }  
-        public string VariantId { get; set; } 
+        public int? ProductId { get; set; }
+        public int Quantity { get; set; }
+        public string VariantId { get; set; }
     }
+
     public class OrderDto
     {
         public int OrderId { get; set; }
@@ -16,7 +17,9 @@
         public string OrderNote { get; set; }
         public int OrderStatusId { get; set; }
         public List<OrderDetailResponseDto> OrderDetails { get; set; }
+        public string ShippingAddress { get; set; } // New field
     }
+
     public class OrderDetailResponseDto
     {
         public int? ProductId { get; set; }
@@ -38,24 +41,27 @@
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
         public List<OrderDetailResponseDto> OrderDetails { get; set; }
+        public string ShippingAddress { get; set; } 
     }
 
     public class CreateOrderDto
     {
-        public int CustomerId { get; set; }  
+        public int CustomerId { get; set; }
         public int? PaymentMethodId { get; set; }
         public int? OrderStatusId { get; set; }
         public string OrderNote { get; set; }
+        public string ShippingAddress { get; set; } // New field
         public decimal ShippingFee { get; set; } = 0;
-        public List<OrderDetailRequestDto> OrderDetails { get; set; } = new List<OrderDetailRequestDto>();  
+        public List<OrderDetailRequestDto> OrderDetails { get; set; } = new List<OrderDetailRequestDto>();
     }
 
     public class UpdateOrderDto
     {
-        public int? CustomerId { get; set; } 
+        public int? CustomerId { get; set; }
         public int? PaymentMethodId { get; set; }
         public int? OrderStatusId { get; set; }
         public string? OrderNote { get; set; }
+        public string ShippingAddress { get; set; } // New field
         public List<OrderDetailRequestDto> OrderDetails { get; set; } = new List<OrderDetailRequestDto>();
     }
 }
